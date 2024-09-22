@@ -51,7 +51,7 @@ func run(window *app.Window) error {
 	defer ticker.Stop()
 
 	go func() {
-		for minutes <= 25 {
+		for minutes < 25 {
 			<-ticker.C
 			if runClock {
 				seconds++
