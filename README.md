@@ -2,7 +2,7 @@
 a tiny timer in golang
 
 
-## Run Localy
+## Run Locally
 In project directory
 ```
 go mod tidy
