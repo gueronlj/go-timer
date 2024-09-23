@@ -26,7 +26,7 @@ func mainImpl() {
 	go func() {
 		w := new(app.Window)
 		w.Option(app.Title("Timer"))
-		w.Option(app.Size(unit.Dp(280), unit.Dp(240))) // Increased height to accommodate larger button
+		w.Option(app.Size(unit.Dp(280), unit.Dp(240)))
 
 		err := run(w)
 		if err != nil {
@@ -41,8 +41,11 @@ func run(window *app.Window) error {
 	theme := material.NewTheme()
 	//defining Operations form user interfacfe
 	var ops op.Ops
+
 	//buttons are actually widgets that are clickable
 	var startButton widget.Clickable
+	var restartButton widget.Clickable
+
 	var runClock bool
 	buttonText := "Start"
 
@@ -81,6 +84,17 @@ func run(window *app.Window) error {
 
 			for startButton.Clicked(gtx) {
 				runClock = !runClock
+				if runClock {
+					buttonText = "Pause"
+				} else {
+					buttonText = "Start"
+				}
+			}
+
+			for restartButton.Clicked(gtx) {
+				seconds, minutes = 0, 0
+				runClock = false
+				buttonText = "Start"
 			}
 
 			if runClock {
@@ -95,23 +109,44 @@ func run(window *app.Window) error {
 						return layout.UniformInset(unit.Dp(20)).Layout(gtx, material.H1(theme, time).Layout)
 					}),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						gtx.Constraints.Min.X = gtx.Constraints.Max.X
-						button := material.Button(theme, &startButton, buttonText)
-						button.Background = color.NRGBA{R: 60, G: 179, B: 113, A: 255}
-						button.CornerRadius = unit.Dp(8)
-						// button.Background = theme.ContrastBg
-						button.TextSize = unit.Sp(20)
 						return layout.UniformInset(unit.Dp(8)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
-							gtx.Constraints.Min.Y = gtx.Dp(64) // Double the default height (32dp)
-							return button.Layout(gtx)
+							return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+								layout.Flexed(1, func(gtx layout.Context) layout.Dimensions {
+									if !runClock && (minutes > 0 || seconds > 0) {
+										// Show both buttons
+										return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
+											layout.Flexed(0.5, func(gtx layout.Context) layout.Dimensions {
+												return layoutButton(gtx, theme, &startButton, buttonText, color.NRGBA{R: 60, G: 179, B: 113, A: 255})
+											}),
+											layout.Flexed(0.5, func(gtx layout.Context) layout.Dimensions {
+												return layoutButton(gtx, theme, &restartButton, "Restart", color.NRGBA{R: 220, G: 20, B: 60, A: 255})
+											}),
+										)
+									} else {
+										// Show only start/pause button
+										return layoutButton(gtx, theme, &startButton, buttonText, color.NRGBA{R: 60, G: 179, B: 113, A: 255})
+									}
+								}),
+							)
 						})
 					}),
 				)
 			})
-			// Pass the drawing operations to the GPU.
+
 			e.Frame(gtx.Ops)
 		}
 	}
+}
+
+func layoutButton(gtx layout.Context, theme *material.Theme, button *widget.Clickable, text string, bg color.NRGBA) layout.Dimensions {
+	btn := material.Button(theme, button, text)
+	btn.Background = bg
+	btn.CornerRadius = unit.Dp(8)
+	btn.TextSize = unit.Sp(20)
+	return layout.UniformInset(unit.Dp(4)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
+		gtx.Constraints.Min.Y = gtx.Dp(48)
+		return btn.Layout(gtx)
+	})
 }
 
 // This function is not used. It is here for history. This is how it started.
