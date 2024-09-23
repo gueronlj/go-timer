@@ -10,6 +10,7 @@ import (
 	"gioui.org/app"
 	"gioui.org/layout"
 	"gioui.org/op"
+	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -25,7 +26,7 @@ func mainImpl() {
 
 	go func() {
 		w := new(app.Window)
-		w.Option(app.Title("Timer"))
+		w.Option(app.Title("Gotimer"))
 		w.Option(app.Size(unit.Dp(280), unit.Dp(240)))
 
 		err := run(w)
@@ -39,8 +40,11 @@ func mainImpl() {
 
 func run(window *app.Window) error {
 	theme := material.NewTheme()
-	//defining Operations form user interfacfe
+	//defining Operations form user interface
 	var ops op.Ops
+
+	// Set the background color to grey
+	grey := color.NRGBA{R: 90, G: 90, B: 90, A: 255}
 
 	//buttons are actually widgets that are clickable
 	var startButton widget.Clickable
@@ -103,10 +107,15 @@ func run(window *app.Window) error {
 				buttonText = "Start"
 			}
 
+			// Set the background color
+			paint.Fill(gtx.Ops, grey)
+
 			layout.Center.Layout(gtx, func(gtx layout.Context) layout.Dimensions {
 				return layout.Flex{Axis: layout.Vertical, Alignment: layout.Middle}.Layout(gtx,
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
-						return layout.UniformInset(unit.Dp(20)).Layout(gtx, material.H1(theme, time).Layout)
+						h1 := material.H1(theme, time)
+						h1.Color = color.NRGBA{R: 255, G: 255, B: 255, A: 255} // Set H1 color to white
+						return layout.UniformInset(unit.Dp(20)).Layout(gtx, h1.Layout)
 					}),
 					layout.Rigid(func(gtx layout.Context) layout.Dimensions {
 						return layout.UniformInset(unit.Dp(8)).Layout(gtx, func(gtx layout.Context) layout.Dimensions {
@@ -116,15 +125,18 @@ func run(window *app.Window) error {
 										// Show both buttons
 										return layout.Flex{Axis: layout.Horizontal}.Layout(gtx,
 											layout.Flexed(0.5, func(gtx layout.Context) layout.Dimensions {
-												return layoutButton(gtx, theme, &startButton, buttonText, color.NRGBA{R: 60, G: 179, B: 113, A: 255})
+												return layoutButton(gtx, theme, &startButton, buttonText, color.NRGBA{R: 0, G: 191, B: 225, A: 120})
 											}),
 											layout.Flexed(0.5, func(gtx layout.Context) layout.Dimensions {
-												return layoutButton(gtx, theme, &restartButton, "Restart", color.NRGBA{R: 220, G: 20, B: 60, A: 255})
+												return layoutButton(gtx, theme, &restartButton, "Restart", color.NRGBA{R: 220, G: 20, B: 60, A: 80})
 											}),
 										)
 									} else {
+										if !runClock && minutes == 25 {
+											return layoutButton(gtx, theme, &restartButton, "Restart", color.NRGBA{R: 220, G: 20, B: 60, A: 80})
+										}
 										// Show only start/pause button
-										return layoutButton(gtx, theme, &startButton, buttonText, color.NRGBA{R: 60, G: 179, B: 113, A: 255})
+										return layoutButton(gtx, theme, &startButton, buttonText, color.NRGBA{R: 0, G: 191, B: 225, A: 120})
 									}
 								}),
 							)
